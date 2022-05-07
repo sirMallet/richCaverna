@@ -3,7 +3,18 @@
 
 from multiprocessing import Queue
 
-
+class RRPID:
+    def __init__(self,pid, num):
+      self.pid = pid
+      self.num = num
+    def getPID(self):
+        return self.pid
+    def getnum(self):
+        return self.num
+    def setPID(self,pid):
+        self.pid = pid
+    def setnum(self,num):
+        self.num = num
 class Processo:
     def __init__(self,pid, burstTime, priority):
         self.pid = pid
@@ -19,6 +30,7 @@ class Processo:
         self.burstTime = burstTime
     def stampa(self):
       print(f"{self.getPID()} con burstTime {self.getBurstTime()} e priorità {self.getPriority()}")
+
 def orderbypriority(processi):
     processi.sort(key=lambda x: x.getPriority()) # Ordina i processi in base alla priorità
 def orderbybursttime(processi):
@@ -27,31 +39,41 @@ def orderbypid(processi):
     processi.sort(key=lambda x: x.getPID()) # Ordina i processi in base al PID    
 
 def RR(processi):
-  Queue = []
+  rr = []
+  rrPid = []
   bt = 0
   tot = 0
   for i in range(len(processi)):
-    Queue.append(processi[i])
-
-  while len(Queue)!= 0:
-    
-    for i in range(len(processi)):
+    rr.append(processi[i])
+    var = RRPID(processi[i].getPID(), 0)
+    rrPid.append(var)
+ 
+  for i in range(len(rr)):
+    rr[i].stampa()
+  print("\n")
+  i=0
+  while len(rr)!= 0:
+    if  rr[i].getBurstTime() <= 10 :
+      for j in range(len(rrPid)):
+        if rrPid[j].getPID() == rr[i].getPID():
+          print(f"- processo {rr[i].getPID()} con burst time: {bt-10*rrPid[j].getnum()}")
+          tot+=bt-10*rrPid[j].getnum()
+          bt += rr[i].getBurstTime()
+          
+            
+         
+      rr.pop(i)
       
-        if  processi[i].getBurstTime() <= 10 :
-          bt += processi[i].getBurstTime()
-          tot+=bt
-          Queue.pop()
-        elif processi[i].getBurstTime() >= 10 : 
-          bt += processi[i].getBurstTime()
-          remain = processi[i].getBurstTime()- 10
-          Queue.append(Processo(processi[i].getPID(),remain,processi[i].getPriority()))
-          Queue.pop(i) 
-
-        tot += bt
-        print(f"- processo {processi[i].getPID()} con burst time: {tot}")
-      else:
-        print(f"- processo {processi[i].getPID()} con burst time: 0 ")
-  
+      
+    elif rr[i].getBurstTime() >= 10 : 
+      bt += 10
+      for j in range(len(rrPid)):
+        if rrPid[j].getPID() == rr[i].getPID():
+          rrPid[j].setnum(rrPid[j].getnum()+1)
+      remain = rr[i].getBurstTime()- 10
+      rr.append(Processo(rr[i].getPID(),remain,rr[i].getPriority()))
+      rr.pop(i) 
+    
   media = tot/len(processi)
   return media # Ritorna il tempo medio di esecuzione
 
@@ -65,7 +87,7 @@ def FCFS(processi):
     if i != 0:
       bt += processi[i-1].getBurstTime()
       tot += bt
-      print(f"- processo {processi[i].getPID()} con burst time: {tot}")
+      print(f"- processo {processi[i].getPID()} con burst time: {bt}")
     else:
       print(f"- processo {processi[i].getPID()} con burst time: 0 ")
   
@@ -80,7 +102,7 @@ def Priority(processi):
     if i != 0:
       bt += processi[i-1].getBurstTime()
       tot += bt
-      print(f"- processo {processi[i].getPID()} con burst time: {tot} ")
+      print(f"- processo {processi[i].getPID()} con burst time: {bt} ")
     else:
       print(f"- processo {processi[i].getPID()} con burst time: 0 ")
   
@@ -96,7 +118,7 @@ def SJF(processi):
     if i != 0:
       bt += processi[i-1].getBurstTime()
       tot += bt
-      print(f"- processo {processi[i].getPID()} con burst time: {tot}")
+      print(f"- processo {processi[i].getPID()} con burst time: {bt}")
     else:
       print(f"- processo {processi[i].getPID()} con burst time: 0")
 
